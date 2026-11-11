@@ -23,14 +23,19 @@ const app = express();
 const port = 3001;
 
 app.use(cors());
-
+app.use(express.json());
 
 /* =========================================
     03 – PROJEKTDATA
    IMPORTERAS FRÅN projekt.js
 ========================================= */
 
+/* =========================================
+   KONTAKTMEDDELANDEN
+   SPARAS TILLFÄLLIGT I SERVERN
+========================================= */
 
+const meddelanden = [];
 
 /* =========================================
    04 – HÄLSNING UTAN NAMN
@@ -103,6 +108,78 @@ app.get("/projekt/:id", (req, res) => {
 
   res.json(valtProjekt);
 });
+
+
+/* =========================================
+   KONTAKTFORMULÄR
+   POST /kontakt
+========================================= */
+
+app.post("/kontakt", (req, res) => {
+
+  /* =====================================
+     01 – HÄMTA FORMULÄRDATA
+  ===================================== */
+
+  const { namn, email, text } = req.body;
+
+
+  /* =====================================
+     02 – VALIDERA FORMULÄRDATA
+  ===================================== */
+
+  if (
+    typeof namn !== "string" ||
+    namn.trim() === "" ||
+    typeof text !== "string" ||
+    text.trim() === ""
+  ) {
+    return res.status(400).json({
+      fel: "Namn och meddelande måste fyllas i."
+    });
+  }
+
+
+  /* =====================================
+     03 – SKAPA NYTT MEDDELANDE
+  ===================================== */
+
+  const nyttMeddelande = {
+    namn,
+    email,
+    text
+  };
+
+
+  /* =====================================
+     04 – SPARA MEDDELANDET
+  ===================================== */
+
+  meddelanden.push(nyttMeddelande);
+
+
+  /* =====================================
+     05 – SKICKA BEKRÄFTELSE
+  ===================================== */
+
+  res.status(201).json({
+    meddelande: "Meddelandet har tagits emot!",
+    data: nyttMeddelande
+  });
+
+});
+
+/* =========================================
+   VISA ALLA KONTAKTMEDDELANDEN
+   GET /kontakt
+========================================= */
+
+app.get("/kontakt", (req, res) => {
+
+  res.json(meddelanden);
+
+});
+
 
 /* =========================================
    10 – STARTA SERVERN
